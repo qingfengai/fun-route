@@ -164,6 +164,7 @@ class Http
 
         //自动创建request对象
         $request = $request ?? $this->app->make('request', [], true);
+        $request->filter(['htmlspecialchars']);
         $this->app->instance('request', $request);
 
         try {
@@ -224,6 +225,15 @@ class Http
         if (is_file($this->app->getBasePath() . 'middleware.php')) {
             $this->app->middleware->import(include $this->app->getBasePath() . 'middleware.php');
         }
+
+        $appRootNamespace = $this->app->getRootNamespace();
+        $rootPath         = root_path();
+
+        $vendorMiddlewareFile = "{$rootPath}vendor/thinkcmf/cmf-{$appRootNamespace}/src/middleware.php";
+        if (is_file($vendorMiddlewareFile)) {
+            $this->app->middleware->import(include $vendorMiddlewareFile);
+        }
+
     }
 
     /**
@@ -233,15 +243,37 @@ class Http
      */
     protected function loadRoutes(): void
     {
-        // 加载路由定义
-        $routePath = $this->getRoutePath();
+        $appRootNamespace = $this->app->getRootNamespace();
+        $rootPath         = root_path();
 
-        if (is_dir($routePath)) {
-            $files = glob($routePath . '*.php');
-            foreach ($files as $file) {
-                include $file;
+        if ($appRootNamespace == 'app') {
+            $routePath = "{$rootPath}data/route/";
+
+            if (is_dir($routePath)) {
+                $files = glob($routePath . '*.php');
+                foreach ($files as $file) {
+                    include $file;
+                }
+            }
+
+            // 加载路由定义
+            $routePath = $this->getRoutePath();
+
+            if (is_dir($routePath)) {
+                $files = glob($routePath . '*.php');
+                foreach ($files as $file) {
+                    include $file;
+                }
             }
         }
+
+        if ($appRootNamespace == 'api') {
+            $routeFile = "{$rootPath}vendor/thinkcmf/cmf-api/src/route.php";
+            if (is_file($routeFile)) {
+                include_once $routeFile;
+            }
+        }
+
 
         $this->app->event->trigger(RouteLoaded::class);
     }

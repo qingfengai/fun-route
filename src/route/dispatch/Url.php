@@ -27,7 +27,6 @@ class Url extends Controller
     {
         $this->request = $request;
         $this->rule    = $rule;
-
         // 解析默认的URL规则
         $dispatch = $this->parseUrl($dispatch);
 
@@ -60,7 +59,6 @@ class Url extends Controller
 
         // 解析控制器
         $controller = !empty($path) ? array_shift($path) : $this->rule->config('default_controller');
-
 
         if ($controller && !preg_match('/^[A-Za-z0-9][\w|\.]*$/', $controller)) {
             throw new HttpException(404, 'controller not exists:' . $controller);

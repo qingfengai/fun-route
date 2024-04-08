@@ -8,7 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare(strict_types=1);
+declare (strict_types = 1);
 
 namespace think\route\dispatch;
 
@@ -48,14 +48,8 @@ class Controller extends Dispatch
             $result = explode('/', $result);
         }
 
-        //var_dump($result);die;
-
         // 获取应用名
-        $appName = $result[0] ?: $this->app->http->getName();
-
-        //$appName = $this->app->http->getName();
-
-        //var_dump($appName);die;
+        $appName = $result[0] ?: config('app.default_app');
 
         // 获取控制器名
         $controller = strip_tags($result[1] ?: $this->rule->config('default_controller'));
@@ -68,8 +62,7 @@ class Controller extends Dispatch
         }
 
         $app->http->name($appName);
-        $appNamespace = 'app';
-
+        $appNamespace = defined('APP_NAMESPACE') ? APP_NAMESPACE : 'app';
         $app->setNamespace($appNamespace . '\\' . $appName);
 
         // 获取操作名
@@ -87,7 +80,7 @@ class Controller extends Dispatch
         $this->app->event->trigger('ModuleInit');
 
         $appName = $this->app->http->getName();
-        $appPath = base_path() . $appName . DIRECTORY_SEPARATOR;
+        $appPath = $this->app->getAppPath() . $appName . DIRECTORY_SEPARATOR;
 
         // 加载应用event
         if (is_file($appPath . 'event.php')) {
@@ -167,12 +160,12 @@ class Controller extends Dispatch
             foreach ($middlewares as $key => $val) {
                 if (!is_int($key)) {
                     if (isset($val['only']) && !in_array($this->request->action(true), array_map(function ($item) {
-                        return strtolower($item);
-                    }, is_string($val['only']) ? explode(",", $val['only']) : $val['only']))) {
+                            return strtolower($item);
+                        }, is_string($val['only']) ? explode(",", $val['only']) : $val['only']))) {
                         continue;
                     } elseif (isset($val['except']) && in_array($this->request->action(true), array_map(function ($item) {
-                        return strtolower($item);
-                    }, is_string($val['except']) ? explode(',', $val['except']) : $val['except']))) {
+                            return strtolower($item);
+                        }, is_string($val['except']) ? explode(',', $val['except']) : $val['except']))) {
                         continue;
                     } else {
                         $val = $key;
@@ -203,7 +196,6 @@ class Controller extends Dispatch
         $suffix = $this->rule->config('controller_suffix') ? 'Controller' : '';
 
         $controllerLayer = $this->rule->config('controller_layer') ?: 'controller';
-
         $emptyController = $this->rule->config('empty_controller') ?: 'Error';
 
         $class = $this->app->parseClass($controllerLayer, $name . $suffix);
